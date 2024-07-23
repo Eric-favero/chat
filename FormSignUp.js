@@ -1,6 +1,11 @@
-import React from 'react';
+import React, {useState} from 'react';
 import styled from 'styled-components';
-import { BrowserRouter as Router ,Route, Navigate, Routes } from "react-router-dom";
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import {auth} from '../firebase.config';
+import {Pressable, Text} from "react-native";
+import {useRouter} from 'expo-router';
+
+
 
 const StyledBody = styled.div`
 
@@ -31,13 +36,13 @@ const StyledCreateAccount = styled.h2`
     text-align: center;
     margin-top:40px;
 `
-const StyledMember = styled.text`
+const StyledMember = styled.label`
 
     color: #3D3D3D;
     font-family: 'Poppins', sans-serif;
     text-align: center;
     font-size: 15px;
-    margin-left: 411px;
+    margin-left: 408px;
     
 `
 const StyledSignIn = styled.button`
@@ -53,6 +58,8 @@ const StyledSignIn = styled.button`
   font-size: 15px;
   background-color: #f4f3f3b6;
   border-bottom: 1px solid #adadad; 
+  margin-left: 0px;
+  margin-top: 0px;
 `
 const StyledInputLabel = styled.label`
   
@@ -109,46 +116,87 @@ const StyledLogoV = styled.img`
 
 
 `
-const handleLogin = () => {
-     
-    window.location.assign('./SignIn');
-  };
-
-const handleChat = () => {
-     
-    window.location.assign('./ChatBase');
-  };
 
 const LogoV = () => {
 
     return (
         <StyledLogoV width="100" height="100" src="https://img.icons8.com/ios-filled/100/v-symbol.png" alt="v-symbol"/>)};
 
-function FormSignUp() {
+function FormSignUp() { 
+    
+    const router = useRouter('');
+    const[userMail, setUserMail] = useState('');
+    const[userPass, setUserPass] = useState('');
+    const[userRepass, setUserRepass] = useState('');
+    const[userName, setUserName] = useState('');
+
+    function AlreadyMember(){
+        router.replace('/')
+    }
+
+    function NewUser(){
+        if(userMail === '' || userName === '' || userPass === '' || userRepass === ''){
+            alert("Fill in all fields! ");
+            return;
+        }
+        if(userPass !== userRepass){
+            alert("The passwords don't match!");
+            return;
+        }
+        else{
+            createUserWithEmailAndPassword(auth,userMail,userPass,userName)
+            .then((UserCredencial) => {
+                const user = UserCredencial.user;
+                alert('User has been Registrated!')
+                window.location.href = '/';})             
+            .catch((error) => {
+                const errorMessage = error.message;
+                alert(errorMessage);
+                
+            });
+            }
+                
+        
+        }
+    
+
     return (
         
         <StyledBody>
             <StyledBox>
                 <StyledCreateAccount>Create an account</StyledCreateAccount>
                 <StyledMember>Already a member?</StyledMember>
-                <StyledSignIn onClick={handleLogin}>Sign In</StyledSignIn>
+
+                
+                
+                    <StyledSignIn onClick={AlreadyMember}>Sign In</StyledSignIn>
+
+                
+            
                 <form>
                     <div>
                         <StyledInputLabel htmlFor="nome">Name</StyledInputLabel>
-                        <StyledInput type="text"
+                        <StyledInput 
+                            type="text"
                             id="nome"
                             placeholder="Full Name"
-                            required />
+                            value={userName}
+                            onChange={(e) => setUserName(e.target.value)}
+                            required
+                            />
                     </div>
 
                     <div>
                         <LogoV></LogoV>
                         <StyledInputLabel htmlFor="email">E-mail</StyledInputLabel>
                         <StyledInput
-                            type="email"
-                            id="email"
-                            placeholder="example@gmail.com"
-                            required />
+                            type="text"
+                            id="emailbox"
+                            placeholder='Email Adress'
+                            value={userMail}
+                            autoComplete="email"
+                            onChange={(e) => setUserMail(e.target.value)}
+                            required/>
                     </div>
 
                     
@@ -158,6 +206,8 @@ function FormSignUp() {
                         type="password"
                         id="password"
                         placeholder="Password"
+                        value={userPass}
+                        onChange={(e) => setUserPass(e.target.value)}
                         required />
 
 
@@ -167,11 +217,23 @@ function FormSignUp() {
                             type="password"
                             id="ReEnterPassword"
                             placeholder="Re-enter password"
+                            value={userRepass}
+                            onChange={(e) => setUserRepass(e.target.value)}
                             required />
                     </div>
 
                     <div>
-                        <StyledButtonLogin onClick={handleChat}>Register</StyledButtonLogin>
+
+                       
+                       
+
+                        <StyledButtonLogin onClick={NewUser}>Register</StyledButtonLogin>
+
+                       
+                       
+                       
+                       
+
                     </div>
                 </form>
             </StyledBox>
@@ -180,13 +242,6 @@ function FormSignUp() {
 }
 
 export default FormSignUp;
-
-
-
-
-
-
-
 
 
 
